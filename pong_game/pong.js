@@ -252,3 +252,114 @@ var Game = {
 			this.paddle.width,
 			this.paddle.height
 		);
+
+		// Draw the Ball
+		if (Pong._turnDelayIsOver.call(this)) {
+			this.context.fillRect(
+				this.ball.x,
+				this.ball.y,
+				this.ball.width,
+				this.ball.height
+			);
+		}
+
+		// Draw the net (Line in the middle)
+		this.context.beginPath();
+		this.context.setLineDash([7, 15]);
+		this.context.moveTo((this.canvas.width / 2), this.canvas.height - 140);
+		this.context.lineTo((this.canvas.width / 2), 140);
+		this.context.lineWidth = 10;
+		this.context.strokeStyle = '#ffffff';
+		this.context.stroke();
+
+		// Set the default canvas font and align it to the center
+		this.context.font = '100px Courier New';
+		this.context.textAlign = 'center';
+
+		// Draw the players score (left)
+		this.context.fillText(
+			this.player.score.toString(),
+			(this.canvas.width / 2) - 300,
+			200
+		);
+
+		// Draw the paddles score (right)
+		this.context.fillText(
+			this.paddle.score.toString(),
+			(this.canvas.width / 2) + 300,
+			200
+		);
+
+		// Change the font size for the center score text
+		this.context.font = '30px Courier New';
+
+		// Draw the winning score (center)
+		this.context.fillText(
+			'Round ' + (Pong.round + 1),
+			(this.canvas.width / 2),
+			35
+		);
+
+		// Change the font size for the center score value
+		this.context.font = '40px Courier';
+
+		// Draw the current round number
+		this.context.fillText(
+			rounds[Pong.round] ? rounds[Pong.round] : rounds[Pong.round - 1],
+			(this.canvas.width / 2),
+			100
+		);
+	},
+
+	loop: function () {
+		Pong.update();
+		Pong.draw();
+
+		// If the game is not over, draw the next frame.
+		if (!Pong.over) requestAnimationFrame(Pong.loop);
+	},
+
+	listen: function () {
+		document.addEventListener('keydown', function (key) {
+			// Handle the 'Press any key to begin' function and start the game.
+			if (Pong.running === false) {
+				Pong.running = true;
+				window.requestAnimationFrame(Pong.loop);
+			}
+
+			// Handle up arrow and w key events
+			if (key.keyCode === 38 || key.keyCode === 87) Pong.player.move = DIRECTION.UP;
+
+			// Handle down arrow and s key events
+			if (key.keyCode === 40 || key.keyCode === 83) Pong.player.move = DIRECTION.DOWN;
+		});
+
+		// Stop the player from moving when there are no keys being pressed.
+		document.addEventListener('keyup', function (key) { Pong.player.move = DIRECTION.IDLE; });
+	},
+
+	// Reset the ball location, the player turns and set a delay before the next round begins.
+	_resetTurn: function(victor, loser) {
+		this.ball = Ball.new.call(this, this.ball.speed);
+		this.turn = loser;
+		this.timer = (new Date()).getTime();
+
+		victor.score++;
+		beep2.play();
+	},
+
+	// Wait for a delay to have passed after each turn.
+	_turnDelayIsOver: function() {
+		return ((new Date()).getTime() - this.timer >= 1000);
+	},
+
+	// Select a random color as the background of each level/round.
+	_generateRoundColor: function () {
+		var newColor = colors[Math.floor(Math.random() * colors.length)];
+		if (newColor === this.color) return Pong._generateRoundColor();
+		return newColor;
+	}
+};
+
+var Pong = Object.assign({}, Game);
+Pong.initialize();
