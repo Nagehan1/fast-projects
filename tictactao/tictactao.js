@@ -9124,6 +9124,7 @@
                         args[ 0 ] = value.call( this, index, self.html() );
                     }
                     self.domManip( args, callback );
+                    
                 });
             }
     
